@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly IMAGE='simple-hyprland/hermes-agent:v2026.9.14'
+
+workspace=''
+state_dir=''
+docker_args=()
+
+die() {
+    printf 'hermes-docker: %s\n' "$*" >&2
+    exit 1
+}
+
+validate_mount_source() {
+    local label=$1
+    local path=$2
+
+    [[ $path == /* ]] || die "$label must be an absolute path: $path"
+    case "$path" in
+        *','* | *$'\n'* | *$'\r'*)
+            die "$label contains a character Docker cannot safely parse: $path"
+            ;;
+    esac
+}
+
+prepare_runtime_paths() {
+    local data_home
+
+    [[ -n ${HOME:-} && $HOME == /* ]] || die 'HOME must be an absolute path.'
+    workspace=$(pwd -P)
+    data_home=${XDG_DATA_HOME:-"$HOME/.local/share"}
+    [[ $data_home == /* ]] || die 'XDG_DATA_HOME must be an absolute path.'
+    state_dir="$data_home/simple-hyprland/hermes"
+    /usr/bin/install -d -m 0700 -- "$state_dir"
+    state_dir=$(/usr/bin/realpath -e -- "$state_dir")
+
+    validate_mount_source 'Workspace' "$workspace"
+    validate_mount_source 'Hermes state directory' "$state_dir"
+}
+
+build_docker_args() {
+    local host_uid=$1
+    local host_gid=$2
+    shift 2
+
+    docker_args=(
+        /usr/bin/sudo -- /usr/bin/docker --host unix:///run/docker.sock run
+        --rm
+        --init
+        --pull=never
+        "--user=$host_uid:$host_gid"
+        --network=bridge
+        --read-only
+        --tmpfs=/tmp:rw,nosuid,nodev,size=256m,mode=1777
+        --tmpfs=/run:rw,nosuid,nodev,size=64m,mode=1777
+        "--tmpfs=/home/agent/.cache:rw,nosuid,nodev,size=512m,mode=0700,uid=$host_uid,gid=$host_gid"
+        --security-opt=no-new-privileges:true
+        --cap-drop=ALL
+        --pids-limit=512
+        --memory=4g
+        --memory-swap=4g
+        --cpus=2
+        --ulimit=nofile=4096:4096
+        --log-driver=none
+        --env=HERMES_HOME=/home/agent/.hermes
+        --env=PYTHONDONTWRITEBYTECODE=1
+        --env=XDG_CACHE_HOME=/home/agent/.cache
+        --mount "type=bind,src=$workspace,dst=/home/agent/workspace,bind-recursive=disabled"
+        --mount "type=bind,src=$state_dir,dst=/home/agent/.hermes,bind-recursive=disabled"
+        --workdir=/home/agent/workspace
+        "$IMAGE"
+        hermes
+        "$@"
+    )
+
+    if [[ -t 0 ]]; then
+        docker_args=("${docker_args[@]:0:6}" --interactive "${docker_args[@]:6}")
+    fi
+    if [[ -t 1 ]]; then
+        docker_args=("${docker_args[@]:0:6}" --tty "${docker_args[@]:6}")
+    fi
+
+    return 0
+}
+
+main() {
+    local host_uid host_gid
+
+    ((EUID != 0)) || die 'Run this launcher as your regular user, not as root.'
+    [[ -x /usr/bin/sudo ]] || die '/usr/bin/sudo is required.'
+    [[ -x /usr/bin/docker ]] || die 'Docker is not installed at /usr/bin/docker.'
+
+    prepare_runtime_paths
+    host_uid=$(/usr/bin/id -u)
+    host_gid=$(/usr/bin/id -g)
+    build_docker_args "$host_uid" "$host_gid" "$@"
+
+    /usr/bin/sudo -k
+    trap '/usr/bin/sudo -k' EXIT
+    "${docker_args[@]}"
+}
+
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+    main "$@"
+fi

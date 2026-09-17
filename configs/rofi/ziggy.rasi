@@ -1,0 +1,78 @@
+* {
+    background: #222222;
+    background-alt: #2d2d2d;
+    foreground: #cccccc;
+    foreground-strong: #eeeeee;
+    muted: #929292;
+    accent: #6688ff;
+    accent-alt: #b1a0f8;
+    selection: #323437;
+    urgent: #ff8080;
+    border-color: #4e4e4e;
+
+    font: "JetBrainsMono Nerd Font 12";
+    background-color: transparent;
+    text-color: @foreground;
+}
+
+window {
+    width: 42%;
+    location: center;
+    anchor: center;
+    background-color: @background;
+    border: 2px;
+    border-color: @accent;
+    border-radius: 12px;
+    padding: 14px;
+}
+
+mainbox, inputbar, listview, entry, element, element-text, textbox-prompt-colon {
+    background-color: transparent;
+}
+
+inputbar {
+    children: [prompt, entry];
+    padding: 6px 8px 12px;
+    border: 0 0 1px 0;
+    border-color: @border-color;
+}
+
+prompt {
+    text-color: @accent;
+    padding: 0 10px 0 0;
+}
+
+entry {
+    text-color: @foreground-strong;
+    placeholder: "Search applications";
+    placeholder-color: @muted;
+}
+
+listview {
+    lines: 8;
+    columns: 1;
+    spacing: 6px;
+    padding: 12px 0 0;
+    scrollbar: false;
+}
+
+element {
+    padding: 9px 10px;
+    border-radius: 8px;
+}
+
+element selected.normal {
+    background-color: @selection;
+    border: 1px;
+    border-color: @accent;
+}
+
+element-icon {
+    size: 1.25em;
+    margin: 0 10px 0 0;
+    vertical-align: 0.5;
+}
+
+element-text { text-color: @foreground; }
+element selected.normal element-text { text-color: @foreground-strong; }
+element urgent element-text { text-color: @urgent; }

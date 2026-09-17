@@ -1,0 +1,70 @@
+# Managed by Simple Hyprland. Keep personal additions in ~/.zshrc.local.
+export ZSH="$HOME/.oh-my-zsh"
+export ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/oh-my-zsh"
+
+# Ten focused plugins: six bundled with Oh My Zsh and four maintained extensions.
+plugins=(
+  git
+  sudo
+  fzf
+  z
+  command-not-found
+  colored-man-pages
+  zsh-autosuggestions
+  zsh-completions
+  zsh-history-substring-search
+  zsh-syntax-highlighting
+)
+
+ZSH_THEME="ziggy"
+DISABLE_UNTRACKED_FILES_DIRTY=true
+HIST_STAMPS="dd.mm.yyyy"
+
+source "$ZSH/oh-my-zsh.sh"
+
+command -v eza >/dev/null && alias ls='eza --group-directories-first'
+command -v bat >/dev/null && alias cat='bat'
+
+# Hermes Docker helpers - start
+_hermes_docker_exec() {
+  local launcher=/usr/local/bin/hermes-docker
+
+  if [[ ! -x $launcher ]]; then
+    print -u2 -- 'hermes: /usr/local/bin/hermes-docker is not installed.'
+    print -u2 -- 'Run ./install.sh --with-hermes-agent from the Simple Hyprland repository.'
+    return 127
+  fi
+
+  "$launcher" "$@"
+}
+
+hermes() {
+  _hermes_docker_exec "$@"
+}
+
+hproject() {
+  if (( $# == 0 )); then
+    print -u2 -- 'usage: hproject PROJECT_DIRECTORY [HERMES_ARGUMENTS...]'
+    return 2
+  fi
+
+  local project=$1
+  shift
+  if [[ ! -d $project ]]; then
+    print -u2 -- "hproject: project directory does not exist: $project"
+    return 1
+  fi
+
+  (
+    builtin cd -P -- "$project" || return
+    hermes "$@"
+  )
+}
+
+alias h='hermes'
+alias hchat='hermes chat'
+alias hsetup='hermes setup'
+alias hdoctor='hermes doctor'
+# Hermes Docker helpers - end
+
+[[ -r "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"

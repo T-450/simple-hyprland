@@ -1,0 +1,10 @@
+# Give Hyprland applications explicit XDG defaults so managed configs can refer
+# to the same config and data directories that the installer uses.
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+
+# Start the managed graphical session only for a tty1 login.
+if [[ -z ${WAYLAND_DISPLAY:-} && -z ${DISPLAY:-} && $(tty) == /dev/tty1 ]] && \
+    uwsm check may-start; then
+    exec uwsm start hyprland-uwsm.desktop
+fi

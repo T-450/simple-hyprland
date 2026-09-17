@@ -1,0 +1,46 @@
+# See https://git-scm.com/docs/git-config
+
+[alias]
+	co = checkout
+	br = branch
+	ci = commit
+	st = status
+[init]
+	defaultBranch = master
+[pull]
+	# Rebase (instead of merge) on pull.
+	rebase = true
+[push]
+	# Automatically set the upstream branch on first push.
+	autoSetupRemote = true
+[diff]
+	# Clearer diffs on moved or edited lines.
+	algorithm = histogram
+	# Highlight moved blocks in diffs.
+	colorMoved = plain
+	# Use more intuitive source and destination prefixes.
+	mnemonicPrefix = true
+[commit]
+	# Include the diff as comments in the commit message template.
+	verbose = true
+[column]
+	# Display supported output in columns when possible.
+	ui = auto
+[branch]
+	# Sort branches by most recent commit first.
+	sort = -committerdate
+[tag]
+	# Sort version-like tag names naturally.
+	sort = -version:refname
+[rerere]
+	# Record and reuse conflict resolutions.
+	enabled = true
+[user]
+	email = edwardteixeiradias@protonmail.com
+	name = T450
+[credential "https://github.com"]
+	helper =
+	helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper =
+	helper = !/usr/bin/gh auth git-credential

@@ -4,61 +4,52 @@
     "mode": "dock",
     "exclusive": true,
     "passthrough": false,
-    "gtk-layer-shell": true,
-    "height": 0,
-    "modules-left": [
-        "clock",
-        "hyprland/workspaces"
-    ],
-    "modules-center": ["hyprland/window"],
-    "modules-right": [
-        "tray",
-        "memory",
-        "cpu",
-        "network",
-        "battery",
-        "backlight",
-        "pulseaudio",
-        "pulseaudio#microphone"
-    ],
+    "gtk-layer-shell": false,
+    "height": 32,
+    "modules-left": ["custom/arch", "hyprland/workspaces", "hyprland/window"],
+    "modules-center": ["clock"],
+    "modules-right": ["pulseaudio", "network", "battery", "backlight", "tray"],
 
     "hyprland/window": {
-        "format": "󰣇 {}"
+        "format": "{}",
+        "max-length": 48,
+        "separate-outputs": false
     },
-    
+
     "hyprland/workspaces": {
         "disable-scroll": true,
         "all-outputs": true,
         "on-click": "activate"
-        //"format": "{icon}",
+    },
+
+    "custom/arch": {
+        "format": "",
+        "tooltip": false,
+        "on-click": "rofi -show drun"
     },
 
     "tray": {
-        "icon-size": 13,
-        "spacing": 10
+        "icon-size": 14,
+        "spacing": 8
     },
 
     "clock": {
-        "format": "{:%A    %B-%d-%Y    %I:%M:%S %p}",
-        "interval": 1,
-        "rotate": 0,
+        "format": "{:%a %d %b  %H:%M}",
         "tooltip-format": "<tt>{calendar}</tt>",
         "calendar": {
             "mode": "month",
-            "mode-mon-col": 3,
             "on-scroll": 1,
             "on-click-right": "mode",
             "format": {
-                "months": "<span color='#a6adc8'><b>{}</b></span>",
-                "weekdays": "<span color='#a6adc8'><b>{}</b></span>",
-                "today": "<span color='#a6adc8'><b>{}</b></span>",
-                "days": "<span color='#555869'><b>{}</b></span>"
+                "months": "<span color='#eeeeee'><b>{}</b></span>",
+                "weekdays": "<span color='#cccccc'><b>{}</b></span>",
+                "today": "<span color='#6688ff'><b>{}</b></span>",
+                "days": "<span color='#929292'>{}</span>"
             }
         }
     },
 
     "backlight": {
-        "device": "intel_backlight",
         "format": "{icon} {percent}%",
         "format-icons": ["󰃞", "󰃟", "󰃠"],
         "on-scroll-up": "brightnessctl set 1%+",
@@ -67,11 +58,7 @@
     },
 
     "battery": {
-        "states": {
-            "good": 95,
-            "warning": 30,
-            "critical": 20
-        },
+        "states": { "warning": 30, "critical": 15 },
         "format": "{icon} {capacity}%",
         "format-charging": " {capacity}%",
         "format-plugged": " {capacity}%",
@@ -80,67 +67,27 @@
     },
 
     "pulseaudio": {
-        "format": "{icon}  {volume}%",
+        "format": "{icon} {volume}%",
+        "format-muted": " muted",
         "tooltip": false,
-        "format-muted": "  Muted",
-        "on-click": "pamixer -t",
-        "on-scroll-up": "pamixer -i 1",
-        "on-scroll-down": "pamixer -d 1",
-        "scroll-step": 5,
+        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "on-scroll-up": "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+",
+        "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-",
         "format-icons": {
             "headphone": "",
-            "hands-free": "",
             "headset": "",
-            "phone": "",
-            "portable": "",
-            "car": "",
-            "default": ["","", "", ""]
+            "default": ["", "", ""]
         }
-    },
-
-    "pulseaudio#microphone": {
-        "format": "{format_source}",
-        "format-source": " {volume}%",
-        "format-source-muted": "  Muted",
-        "on-click": "pamixer --default-source -t",
-        "on-scroll-up": "pamixer --default-source -i 5",
-        "on-scroll-down": "pamixer --default-source -d 5",
-        "scroll-step": 5
-    },
-
-    "memory": {
-        "states": {
-            "c": 90, // critical
-            "h": 60, // high
-            "m": 30 // medium
-        },
-        "interval": 10,
-        "format": "󰾆 {used}GB",
-        "format-m": "󰾅 {used}GB",
-        "format-h": "󰓅 {used}GB",
-        "format-c": " {used}GB",
-        "format-alt": "󰾆 {percentage}%",
-        "max-length": 10,
-        "tooltip": true,
-        "tooltip-format": "󰾆 {percentage}%\n {used:0.1f}GB/{total:0.1f}GB"
-    },
-
-    "cpu": {
-        "interval": 10,
-        "format": "󰍛 {usage}%",
-        "format-alt": "{icon0}{icon1}{icon2}{icon3}",
-        "format-icons": ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"]
     },
 
     "network": {
         "tooltip": true,
-        "format-wifi": "  {essid}",
-        "format-ethernet": "󰈀 ",
-        "tooltip-format": "Network: <big><b>{essid}</b></big>\nSignal strength: <b>{signaldBm}dBm ({signalStrength}%)</b>\nFrequency: <b>{frequency}MHz</b>\nInterface: <b>{ifname}</b>\nIP: <b>{ipaddr}/{cidr}</b>\nGateway: <b>{gwaddr}</b>\nNetmask: <b>{netmask}</b>",
-        "format-linked": "󰈀 {ifname} (No IP)",
-        "format-disconnected": "󰖪 ",
-        "tooltip-format-disconnected": "Disconnected",
-        "format-alt": "<span foreground='#99ffdd'> {bandwidthDownBytes}</span> <span foreground='#ffcc66'> {bandwidthUpBytes}</span>",
-        "interval": 2
+        "format-wifi": " {essid}",
+        "format-ethernet": "󰈀 connected",
+        "format-linked": "󰈀 {ifname}",
+        "format-disconnected": "󰖪 offline",
+        "tooltip-format": "<b>{essid}</b>\n{ipaddr}/{cidr}",
+        "tooltip-format-ethernet": "<b>{ifname}</b>\n{ipaddr}/{cidr}",
+        "tooltip-format-disconnected": "Disconnected"
     }
 }

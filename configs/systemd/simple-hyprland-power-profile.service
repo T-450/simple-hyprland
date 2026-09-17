@@ -1,0 +1,11 @@
+[Unit]
+Description=Apply Simple Hyprland AC or battery power profile
+Wants=tuned.service tuned-ppd.service
+After=tuned-ppd.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/simple-hyprland/apply-power-profile
+
+[Install]
+WantedBy=multi-user.target

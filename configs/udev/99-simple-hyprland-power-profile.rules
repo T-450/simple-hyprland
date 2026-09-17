@@ -1,0 +1,2 @@
+# Reapply the TuneD profile whenever an external power source changes state.
+ACTION=="change", SUBSYSTEM=="power_supply", ATTR{type}!="Battery", TAG+="systemd", ENV{SYSTEMD_WANTS}+="simple-hyprland-power-profile.service"
